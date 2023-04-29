@@ -21,21 +21,3 @@ const lightbox = new SimpleLightbox(".gallery a", {
   captionDelay: 250,
 });
 
-// Close instance on Esc key press
-const onEscPress = (event) => {
-  const ESC_KEYCODE = "Escape";
-  if (event.code === ESC_KEYCODE) {
-    lightbox.close();
-    document.removeEventListener("keydown", onEscPress);
-  }
-};
-
-// Handle keydown events
-document.addEventListener("keydown", (event) => {
-  onEscPress(event);
-});
-
-// Prevent default click behaviour
-galleryList.addEventListener("click", (event) => {
-  event.preventDefault();
-});

@@ -1,43 +1,57 @@
-
 import throttle from 'lodash.throttle';
-
-const form = document.querySelector('.feedback-form');
-const emailInput = form.querySelector('input[name="email"]');
-const messageInput = form.querySelector('textarea[name="message"]');
-
 const STORAGE_KEY = 'feedback-form-state';
 
-// Завантаження збереженого стану форми
-const savedFeedback = JSON.parse(localStorage.getItem(STORAGE_KEY));
-if (savedFeedback) {
-  emailInput.value = savedFeedback.email;
-  messageInput.value = savedFeedback.message;
+const refs = {
+  form: document.querySelector('.feedback-form'),
+};
+
+populateEmailAndTextarea();
+
+refs.form.addEventListener('input', throttle(onFormInput, 500));
+refs.form.addEventListener('submit', onFormSubmit);
+
+let formData = {};
+
+function onFormInput(event) {
+  formData[event.target.name] = event.target.value.trim();
+
+  saveDataToLocalStorage(formData);
 }
 
-// Оновлення стану форми при вводі тексту
-const saveFeedback = throttle(() => {
-  const feedback = {
-    email: emailInput.value,
-    message: messageInput.value,
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(feedback));
-}, 500);
+function onFormSubmit(event) {
+  event.preventDefault();
 
-emailInput.addEventListener('input', saveFeedback);
-messageInput.addEventListener('input', saveFeedback);
+  console.log(getDataFromLocalStorage());
 
-// Обробка події submit
-form.addEventListener('submit', e => {
-  e.preventDefault();
+  event.target.reset();
+  removeDataFromLocaleStorage();
+}
 
-  const feedback = {
-    email: emailInput.value,
-    message: messageInput.value,
-  };
-  console.log(feedback);
+function saveDataToLocalStorage(formData) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+}
 
+function removeDataFromLocaleStorage() {
   localStorage.removeItem(STORAGE_KEY);
+}
 
-  emailInput.value = '';
-  messageInput.value = '';
-});
+function getDataFromLocalStorage() {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      return JSON.parse(savedData);
+    } else {
+      return {};
+    }
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
+}
+
+function populateEmailAndTextarea() {
+  const parsedData = getDataFromLocalStorage();
+
+  Object.entries(parsedData).forEach(
+    ([key, value]) => (refs.form[key].value = value)
+  );
+}
